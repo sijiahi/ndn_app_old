@@ -26,14 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         ndn_app.cpp \
-    nfd_checker.cpp
+    nfd_checker.cpp \
+    dialog.cpp
 
 HEADERS += \
     ndn_app.h \
-    nfd_checker.h
+    nfd_checker.h \
+    dialog.h
 
 FORMS += \
-        ndn_app.ui
+        ndn_app.ui \
+    dialog.ui
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += libndn-cxx

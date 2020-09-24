@@ -15,6 +15,9 @@ public:
     explicit ndn_app(QWidget *parent = 0);
     ~ndn_app();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::ndn_app *ui;
 };

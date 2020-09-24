@@ -52,31 +52,15 @@ OBJECTS_DIR   = ./
 
 SOURCES       = ../app/main.cpp \
 		../app/ndn_app.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
 		../app/nfd_checker.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/nfd_checker.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/nfd_checker.cpp moc_ndn_app.cpp
+		../app/dialog.cpp moc_ndn_app.cpp \
+		moc_dialog.cpp
 OBJECTS       = main.o \
 		ndn_app.o \
-		main.o \
-		ndn_app.o \
-		main.o \
-		ndn_app.o \
 		nfd_checker.o \
-		main.o \
-		ndn_app.o \
-		nfd_checker.o \
-		main.o \
-		ndn_app.o \
-		nfd_checker.o \
-		moc_ndn_app.o
+		dialog.o \
+		moc_ndn_app.o \
+		moc_dialog.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/linux.conf \
@@ -153,25 +137,11 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		../app/app.pro ../app/ndn_app.h \
-		../app/ndn_app.h \
-		../app/ndn_app.h \
 		../app/nfd_checker.h \
-		../app/ndn_app.h \
-		../app/nfd_checker.h \
-		../app/ndn_app.h \
-		../app/nfd_checker.h ../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/main.cpp \
+		../app/dialog.h ../app/main.cpp \
 		../app/ndn_app.cpp \
 		../app/nfd_checker.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/nfd_checker.cpp \
-		../app/main.cpp \
-		../app/ndn_app.cpp \
-		../app/nfd_checker.cpp
+		../app/dialog.cpp
 QMAKE_TARGET  = app
 DESTDIR       = 
 TARGET        = app
@@ -180,7 +150,7 @@ TARGET        = app
 first: all
 ####### Build rules
 
-$(TARGET): ui_ndn_app.h $(OBJECTS)  
+$(TARGET): ui_ndn_app.h ui_dialog.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -357,9 +327,9 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/ndn_app.h ../app/ndn_app.h ../app/ndn_app.h ../app/nfd_checker.h ../app/ndn_app.h ../app/nfd_checker.h ../app/ndn_app.h ../app/nfd_checker.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/main.cpp ../app/ndn_app.cpp ../app/main.cpp ../app/ndn_app.cpp ../app/main.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp ../app/main.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp ../app/main.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/ndn_app.ui ../app/ndn_app.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/ndn_app.h ../app/nfd_checker.h ../app/dialog.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/main.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp ../app/dialog.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/ndn_app.ui ../app/dialog.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -391,46 +361,31 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -g -pthread -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp
+compiler_moc_header_make_all: moc_ndn_app.cpp moc_dialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp moc_ndn_app.cpp
+	-$(DEL_FILE) moc_ndn_app.cpp moc_dialog.cpp
 moc_ndn_app.cpp: ../app/ndn_app.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
 	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
 
-moc_ndn_app.cpp: ../app/ndn_app.h \
+moc_dialog.cpp: ../app/dialog.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
-
-moc_ndn_app.cpp: ../app/ndn_app.h \
-		moc_predefs.h \
-		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
-
-moc_ndn_app.cpp: ../app/ndn_app.h \
-		moc_predefs.h \
-		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
-
-moc_ndn_app.cpp: ../app/ndn_app.h \
-		moc_predefs.h \
-		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/dialog.h -o moc_dialog.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_ndn_app.h ui_ndn_app.h
+compiler_uic_make_all: ui_ndn_app.h ui_dialog.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_ndn_app.h ui_ndn_app.h
+	-$(DEL_FILE) ui_ndn_app.h ui_dialog.h
 ui_ndn_app.h: ../app/ndn_app.ui \
 		/usr/lib/qt5/bin/uic
 	/usr/lib/qt5/bin/uic ../app/ndn_app.ui -o ui_ndn_app.h
 
-ui_ndn_app.h: ../app/ndn_app.ui \
+ui_dialog.h: ../app/dialog.ui \
 		/usr/lib/qt5/bin/uic
-	/usr/lib/qt5/bin/uic ../app/ndn_app.ui -o ui_ndn_app.h
+	/usr/lib/qt5/bin/uic ../app/dialog.ui -o ui_dialog.h
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -446,48 +401,23 @@ main.o: ../app/main.cpp ../app/ndn_app.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
 
 ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
-		ui_ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
-
-main.o: ../app/main.cpp ../app/ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
-
-ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
-		ui_ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
-
-main.o: ../app/main.cpp ../app/ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
-
-ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
-		ui_ndn_app.h
+		ui_ndn_app.h \
+		../app/nfd_checker.h \
+		../app/dialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
 
 nfd_checker.o: ../app/nfd_checker.cpp ../app/nfd_checker.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_checker.o ../app/nfd_checker.cpp
 
-main.o: ../app/main.cpp ../app/ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
-
-ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
-		ui_ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
-
-nfd_checker.o: ../app/nfd_checker.cpp ../app/nfd_checker.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_checker.o ../app/nfd_checker.cpp
-
-main.o: ../app/main.cpp ../app/ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
-
-ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
-		ui_ndn_app.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
-
-nfd_checker.o: ../app/nfd_checker.cpp ../app/nfd_checker.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_checker.o ../app/nfd_checker.cpp
+dialog.o: ../app/dialog.cpp ../app/dialog.h \
+		ui_dialog.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dialog.o ../app/dialog.cpp
 
 moc_ndn_app.o: moc_ndn_app.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ndn_app.o moc_ndn_app.cpp
+
+moc_dialog.o: moc_dialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dialog.o moc_dialog.cpp
 
 ####### Install
 
