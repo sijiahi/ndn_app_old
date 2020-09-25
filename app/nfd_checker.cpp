@@ -1,5 +1,6 @@
 #include "nfd_checker.h"
 #include <QMessageBox>
+#include <QTextStream>
 
 nfd_checker::nfd_checker()
 {
@@ -26,14 +27,25 @@ nfd_checker::run(){
 
 void
 nfd_checker::onData(const Interest& interest, const Data& data){
+        QTextStream text;
        std::cout << "Received Data " << data << std::endl;
+       QMessageBox msgBox;
+       msgBox.setText();
+       msgBox.exec();
 }
 void
 nfd_checker::onNack(const Interest& interest, const Nack& nack){
     std::cout << "Received Nack with reason " << nack.getReason() << std::endl;
+    QMessageBox msgBox;
+    //msgBox.setText(nack.getReason() );
+    msgBox.exec();
 }
 void
 nfd_checker::onTimeout(const Interest& interest){
       std::cout << "Timeout for " << interest << std::endl;
+      QMessageBox msgBox;
+      //msgBox.setText(interest);
+      msgBox.exec();
+
 }
 

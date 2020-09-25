@@ -44,3 +44,5 @@ unix: PKGCONFIG += libndn-cxx
 
 SUBDIRS += \
     app.pro \
+
+unix: PKGCONFIG += libndn-cpp
