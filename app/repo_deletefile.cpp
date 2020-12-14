@@ -1,9 +1,9 @@
-#include "repo_putfile.h"
+#include "repo_deletefile.h"
 #include <QInputDialog>
 #include <QFileDialog>
 namespace repo{
 void
-repo_putfile::prepareNextData(uint64_t referenceSegmentNo)
+repo_deletefile::prepareNextData(uint64_t referenceSegmentNo)
 {
   // make sure m_data has [referenceSegmentNo, referenceSegmentNo + PRE_SIGN_DATA_COUNT] Data
   if (m_isFinished)
@@ -40,12 +40,7 @@ repo_putfile::prepareNextData(uint64_t referenceSegmentNo)
   }
 }
 void
-repo_putfile::setInsertStream(std::istream* inputFileStream){
-    insertStream = inputFileStream;
-    setSingle();
-}
-void
-repo_putfile::setSingle(){
+repo_deletefile::setSingle(){
  if (insertStream->peek() != std::istream::traits_type::eof()) {
      isSingle = false;
  }
@@ -54,35 +49,14 @@ repo_putfile::setSingle(){
  }
 }
 void
-repo_putfile::run()
+repo_deletefile::run()
 {
   m_dataPrefix = ndnName;
-  if (!isUnversioned)
-    m_dataPrefix.appendVersion(m_timestampVersion);
-  if (isVerbose)
-    std::cerr << "setInterestFilter for " << m_dataPrefix << std::endl;
-  m_face.setInterestFilter(m_dataPrefix,
-                           bind(&repo_putfile::onInterestSelect, this, _1, _2),
-                           bind(&repo_putfile::onRegisterSuccess, this, _1),
-                           bind(&repo_putfile::onRegisterFailed, this, _1, _2));
-
-  if (hasTimeout)
-    m_scheduler.schedule(timeout, [this] { stopProcess(); });
-
-  m_face.processEvents();
+startDeleteCommand();
 }
-
 void
-repo_putfile::onRegisterSuccess(const Name& prefix)
-{
-  std::cout<<"Register prefix: "<<prefix<<" Success! "<<std::endl;
-  startInsertCommand();
-}
-
-void
-repo_putfile::startInsertCommand()
-{
-  //** Insert Command must set 3 arguments:
+repo_deletefile::startDeleteCommand()
+{  //** Insert Command must set 3 arguments:
   //1 PrefixName(setName(String))
   //2 StartBlockId;
   //2 EndblockId;
@@ -90,55 +64,75 @@ repo_putfile::startInsertCommand()
   parameters.setName(m_dataPrefix);
 //****Need to set Start Block ID and End Block Id to enable Data Transmission!!!!
   if (!isSingle) {
-    parameters.setStartBlockId(0);
+      parameters.setStartBlockId(0);
   }
-  ndn::Interest commandInterest = generateCommandInterest(repoPrefix, "insert", parameters);
-  std::cout<<"Inserting Command"<<commandInterest<<std::endl;
+  m_processId = ndn::random::generateWord64();
+  parameters.setProcessId(m_processId);
+  ndn::Interest commandInterest = generateCommandInterest(repoPrefix, "delete", parameters);
   m_face.expressInterest(commandInterest,
-                         bind(&repo_putfile::onInsertCommandResponse, this, _1, _2),
-                         bind(&repo_putfile::onInsertCommandNack, this, _1), // Nack
-                         bind(&repo_putfile::onInsertCommandTimeout, this, _1));
+                         bind(&repo_deletefile::onDeleteCommandResponse, this, _1, _2),
+                         bind(&repo_deletefile::onDeleteCommandNack, this, _1, _2), // Nack
+                         bind(&repo_deletefile::onDeleteCommandTimeout, this, _1));
+  // processEvents will block until the requested data is received or a timeout occurs
+  m_face.processEvents();
 }
 
 void
-repo_putfile::onInsertCommandResponse(const ndn::Interest& interest, const ndn::Data& data)
+repo_deletefile::onDeleteCommandResponse(const ndn::Interest& interest, const ndn::Data& data)
 {
-  std::cout<<"Got Insert Comment response Content"<<data<<std::endl;
   RepoCommandResponse response(data.getContent().blockFromValue());
-  //std::cout<<"ResponseInitialized"<<response<<std::endl;
-  auto statusCode = response.getCode();
-  std::cout<<"Received Responsewith code : "+statusCode<<std::endl;
-  if (statusCode >= 400) {
-    BOOST_THROW_EXCEPTION(Error("insert command failed with code " +
-                                boost::lexical_cast<std::string>(statusCode)));
+  if(m_processId == response.getProcessId()){
+      auto statusCode = response.getCode();
+      std::string status = response.getDeletionStatus();
+      process.addMessage(QString::fromStdString("\nInsert Command Response: "+status));
+      if (statusCode >= 400) {
+          if(response.hasStatusCode())
+              process.addMessage(QString::fromStdString("\nInsert Command Failed with Message"+response.getText()));
+          else{
+              process.addMessage(QString::fromStdString("\nInsert Command Failed with Code"+response.getCode()));
+                process.exec();
+        BOOST_THROW_EXCEPTION(Error("insert command failed with code " +
+                                    boost::lexical_cast<std::string>(statusCode)));}}
+      if(statusCode == 300)
+        m_scheduler.schedule(m_checkPeriod, [this] { startCheckCommand(); });
+      if(statusCode == 200){
+          process.addMessage(QString::fromStdString("\nInsert Command Success with Code"+response.getCode()));
+            process.exec();
+            return;}
   }
-  std::cout<<"Setting processId: "<<response.getProcessId();
-  m_processId = response.getProcessId();
-
-  m_scheduler.schedule(m_checkPeriod, [this] { startCheckCommand(); });
+  else{
+      process.addMessage("Wrong ProcessID!");
+      process.exec();
+      return;
+  }
 }
 
 void
-repo_putfile::onInsertCommandNack(const ndn::Interest& interest)
+repo_deletefile::onDeleteCommandNack(const ndn::Interest& interest, const ndn::lp::Nack& nack)
 {
-    BOOST_THROW_EXCEPTION(Error("insertion command nacked"));
-
+    std::stringstream reason;
+    reason << nack.getReason() <<"!";
+    process.addMessage(QString::fromStdString("\nDelete Command Nacked with reason: "+reason.str()));
+    process.exec();
+    BOOST_THROW_EXCEPTION(Error("Delete command nacked"));
 }
 
 void
-repo_putfile::onInsertCommandTimeout(const ndn::Interest& interest)
+repo_deletefile::onDeleteCommandTimeout(const ndn::Interest& interest)
 {
-  BOOST_THROW_EXCEPTION(Error("command response timeout"));
+  process.addMessage(QString::fromStdString("\nDelete Command Timeout! "));
+  process.exec();
+  BOOST_THROW_EXCEPTION(Error("Delete command timeout! "));
 }
 
 void
-repo_putfile::onInterestSelect(const ndn::Name& prefix, const ndn::Interest& interest)
+repo_deletefile::onInterestSelect(const ndn::Name& prefix, const ndn::Interest& interest)
 {
     uint8_t buffer[DEFAULT_BLOCK_SIZE];
     std::streamsize readSize =
-        boost::iostreams::read(*insertStream, reinterpret_cast<char*>(buffer), DEFAULT_BLOCK_SIZE);
-  if (insertStream->peek() != std::istream::traits_type::eof()) {
-      std::cout<<"Processing segmented command"<<std::endl;
+    boost::iostreams::read(*insertStream, reinterpret_cast<char*>(buffer), DEFAULT_BLOCK_SIZE);
+  if (!isSingle) {
+      ////////////////////////////////////////////////////////
       if (interest.getName().size() != prefix.size() + 1) {
         if (isVerbose) {
           std::cerr << "Error processing incoming interest " << interest << ": "
@@ -170,120 +164,42 @@ repo_putfile::onInterestSelect(const ndn::Name& prefix, const ndn::Interest& int
         uint64_t final = m_currentSegmentNo - 1;
         item->second->setFinalBlock(ndn::name::Component::fromSegment(final));
       }
+      process.addMessage(QString::fromStdString("\nTransmitted data! "));
       std::cout<<"Transmitting data: "<<*item->second<<std::endl;
       m_face.put(*item->second);
-    return;
+      return;
+    ////////////////////////////////////////////////////////////////////////////////
   }
   else{
+    ////////////////////////////////////////////////////////////////////////////////
+      if (readSize <= 0) {
+        BOOST_THROW_EXCEPTION(Error("Error reading from the input stream(Single)"));
+      }
       std::cout<<"Processing single insert interest"<<std::endl;
-      std::cerr << "Received unexpected interest " << interest.getName() <<"\nExpecting Prefix: "<<prefix<<std::endl;
+      std::cerr << "\nReceived unexpected interest " << interest.getName() <<"\nExpecting Prefix: "<<prefix<<std::endl;
       BOOST_ASSERT(prefix == m_dataPrefix);
-      /*if (prefix != interest.getName()) {
-        if (isVerbose) {
-          std::cerr << "Received unexpected interest " << interest.getName() <<"\nExpecting Prefix: "<<prefix<<std::endl;
-        }
-        return;
-      }*/
-
       auto data = make_shared<ndn::Data>(m_dataPrefix);
       data->setContent(buffer, readSize);
       data->setFreshnessPeriod(freshnessPeriod);
       signData(*data);
       m_face.put(*data);
       m_isFinished = true;
-    return;
+      process.addMessage(QString::fromStdString("\nTransmitted data !"));
+      return;
+    ////////////////////////////////////////////////////////
   }
 }
-void
-repo_putfile::onInterest(const ndn::Name& prefix, const ndn::Interest& interest)
-{
-  std::cout<<"Received Interest"<<interest<<std::endl;
-  if (interest.getName().size() != prefix.size() + 1) {
-    if (isVerbose) {
-      std::cerr << "Error processing incoming interest " << interest << ": "
-                << "Unrecognized Interest" << std::endl;
-    }
-    return;
-  }
 
-  uint64_t segmentNo;
-  try {
-    ndn::Name::Component segmentComponent = interest.getName().get(prefix.size());
-    segmentNo = segmentComponent.toSegment();
-  }
-  catch (const tlv::Error& e) {
-    if (isVerbose) {
-      std::cerr << "Error processing incoming interest " << interest << ": "
-                << e.what() << std::endl;
-    }
-    return;
-  }
 
-  prepareNextData(segmentNo);
-
-  DataContainer::iterator item = m_data.find(segmentNo);
-  if (item == m_data.end()) {
-    if (isVerbose) {
-      std::cerr << "Requested segment [" << segmentNo << "] does not exist" << std::endl;
-    }
-    return;
-  }
-
-  if (m_isFinished) {
-    uint64_t final = m_currentSegmentNo - 1;
-    item->second->setFinalBlock(ndn::name::Component::fromSegment(final));
-  }
-  std::cout<<"Transmitting data: "<<*item->second<<std::endl;
-  m_face.put(*item->second);
-}
 
 void
-repo_putfile::onSingleInterest(const ndn::Name& prefix, const ndn::Interest& interest)
-{
-  BOOST_ASSERT(prefix == m_dataPrefix);
-
-  if (prefix != interest.getName()) {
-    if (isVerbose) {
-      std::cerr << "Received unexpected interest " << interest << std::endl;
-    }
-    return;
-  }
-
-  uint8_t buffer[DEFAULT_BLOCK_SIZE];
-  std::streamsize readSize =
-    boost::iostreams::read(*insertStream, reinterpret_cast<char*>(buffer), DEFAULT_BLOCK_SIZE);
-
-  if (readSize <= 0) {
-    BOOST_THROW_EXCEPTION(Error("Error reading from the input stream"));
-  }
-
-  if (insertStream->peek() != std::istream::traits_type::eof()) {
-    BOOST_THROW_EXCEPTION(Error("Input data does not fit into one Data packet"));
-  }
-
-  auto data = make_shared<ndn::Data>(m_dataPrefix);
-  data->setContent(buffer, readSize);
-  data->setFreshnessPeriod(freshnessPeriod);
-  signData(*data);
-  m_face.put(*data);
-
-  m_isFinished = true;
-}
-
-void
-repo_putfile::onRegisterFailed(const ndn::Name& prefix, const std::string& reason)
-{
-  BOOST_THROW_EXCEPTION(Error("onRegisterFailed: " + reason));
-}
-
-void
-repo_putfile::stopProcess()
+repo_deletefile::stopProcess()
 {
   m_face.getIoService().stop();
 }
 
 void
-repo_putfile::signData(ndn::Data& data)
+repo_deletefile::signData(ndn::Data& data)
 {
   if (useDigestSha256) {
     m_keyChain.sign(data, ndn::signingWithSha256());
@@ -296,7 +212,7 @@ repo_putfile::signData(ndn::Data& data)
 }
 
 void
-repo_putfile::startCheckCommand()
+repo_deletefile::startCheckCommand()
 {
   //TODO: Set Command Parameters
   RepoCommandParameter parameters;
@@ -305,58 +221,78 @@ repo_putfile::startCheckCommand()
   ndn::Interest checkInterest = generateCommandInterest(repoPrefix, "insertcheck",
                                                         parameters);
   std::cout<<"Expressing Check Command Interest"<<checkInterest<<std::endl;
+  std::cout<<"For Process ID "<<m_processId<<std::endl;
   m_face.expressInterest(checkInterest,
-                         bind(&repo_putfile::onCheckCommandResponse, this, _1, _2),
-                         bind(&repo_putfile::onCheckCommandNack, this, _1), // Nack
-                         bind(&repo_putfile::onCheckCommandTimeout, this, _1));
+                         bind(&repo_deletefile::onCheckCommandResponse, this, _1, _2),
+                         bind(&repo_deletefile::onCheckCommandNack, this, _1), // Nack
+                         bind(&repo_deletefile::onCheckCommandTimeout, this, _1));
 }
 
 void
-repo_putfile::onCheckCommandResponse(const ndn::Interest& interest, const ndn::Data& data)
+repo_deletefile::onCheckCommandResponse(const ndn::Interest& interest, const ndn::Data& data)
 {
-  ndn::mgmt::ControlResponse Controlresponse(data.getContent().blockFromValue());
-  RepoCommandResponse response(data.getContent().blockFromValue());
-  auto statusCode = response.getCode();
-  if (statusCode >= 400) {
-    BOOST_THROW_EXCEPTION(Error("Insert check command failed with code: " +
-                                boost::lexical_cast<std::string>(statusCode)));
-  }
-
+    //////////////////////////////////////////////
+    /// \brief Controlresponse
+    RepoCommandResponse response(data.getContent().blockFromValue());
+    std::string status = response.getDeletionStatus();
+    process.addMessage(QString::fromStdString("\nCheck Insertion Process: "+status));
+    auto statusCode = response.getCode();
+    if (statusCode >= 400) {
+        process.addMessage(QString::fromStdString("\nInsertion failed with Message from code: "+statusCode+response.getDeletionStatus()));
+        process.addMessage(QString::fromStdString("\nWith Message: "+response.getText()));
+      process.exec();
+      BOOST_THROW_EXCEPTION(Error("Insertion failed with code " +
+                                  boost::lexical_cast<std::string>(statusCode)));}
+    process.addMessage(QString::fromStdString("\nCheck Insertion Process: "+statusCode));
+//////////////////////////////////////////////
+    if (statusCode == 200) {
+      //TODO: A Msg Box to notify User Process Has finished
+          m_face.getIoService().stop();
+          process.addMessage(QString::fromStdString("\Deletion Process Finished !"));
+          process.exec();
+          return;
+      }
   if (m_isFinished) {
+    //TODO: A Msg Box to notify User Process Has finished
     uint64_t insertCount = response.getInsertNum();
-    std::cout<<"Insert Num"<<insertCount<<std::endl;
     if (isSingle) {
       if (insertCount == 1) {
         m_face.getIoService().stop();
+        process.addMessage(QString::fromStdString("\nDeletion Process Finished !"));
+        process.exec();
         return;
       }
     }
     // Technically, the check should not infer, but directly has signal from repo that
     // write operation has been finished
-
     if (insertCount == m_currentSegmentNo) {
       m_face.getIoService().stop();
+      process.addMessage(QString::fromStdString("\nInsertion Process Finished !"));
+      process.exec();
       return;
     }
   }
-
-  m_scheduler.schedule(m_checkPeriod, [this] { startCheckCommand(); });
+      m_scheduler.schedule(m_checkPeriod, [this] { startCheckCommand(); });
 }
 
 void
-repo_putfile::onCheckCommandNack(const ndn::Interest& interest)
+repo_deletefile::onCheckCommandNack(const ndn::Interest& interest)
 {
-  BOOST_THROW_EXCEPTION(Error("check response Nacked"));
+    process.addMessage(QString::fromStdString("\nCheck response Nacked! "));
+    process.exec();
+    BOOST_THROW_EXCEPTION(Error("check response Nacked"));
 }
 
 void
-repo_putfile::onCheckCommandTimeout(const ndn::Interest& interest)
+repo_deletefile::onCheckCommandTimeout(const ndn::Interest& interest)
 {
-  BOOST_THROW_EXCEPTION(Error("check response timeout"));
+    process.addMessage(QString::fromStdString("\nCheck response timeout! "));
+    process.exec();
+    BOOST_THROW_EXCEPTION(Error("check response timeout"));
 }
 
 ndn::Interest
-repo_putfile::generateCommandInterest(const ndn::Name& commandPrefix, const std::string& command,
+repo_deletefile::generateCommandInterest(const ndn::Name& commandPrefix, const std::string& command,
                                     const RepoCommandParameter& commandParameter)
 {
   Name cmd = commandPrefix;
@@ -370,12 +306,9 @@ repo_putfile::generateCommandInterest(const ndn::Name& commandPrefix, const std:
   else {
     interest = m_cmdSigner.makeCommandInterest(cmd, ndn::signingByIdentity(identityForCommand));
   }
-
   interest.setInterestLifetime(interestLifetime);
   return interest;
 }
-
-
 } // namespace repo
 
 

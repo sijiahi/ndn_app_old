@@ -70,9 +70,19 @@ RepoCommandResponse&
 RepoCommandResponse::setCode(uint32_t statusCode)
 {
   m_hasStatusCode = true;
-
   RepoCommandResponse* response =
     static_cast<RepoCommandResponse *> (&ndn::mgmt::ControlResponse::setCode(statusCode));
+  m_wire.reset();
+  return *response;
+}
+
+RepoCommandResponse&
+RepoCommandResponse::setText(std::string status)
+{
+  m_hasStatus = true;
+
+  RepoCommandResponse* response =
+    static_cast<RepoCommandResponse *> (&ndn::mgmt::ControlResponse::setText(status));
   return *response;
 }
 
@@ -81,6 +91,7 @@ RepoCommandResponse::hasStatusCode() const
 {
   return m_hasStatusCode;
 }
+
 
 RepoCommandResponse&
 RepoCommandResponse::setInsertNum(uint64_t insertNum)
@@ -162,7 +173,7 @@ RepoCommandResponse::wireEncode(EncodingImpl<T>& encoder) const
     variableLength = encoder.prependNonNegativeInteger(m_startBlockId);
     totalLength += variableLength;
     totalLength += encoder.prependVarNumber(variableLength);
-    totalLength += encoder.prependVarNumber(repo::tlv::StartBlockId);
+    totalLength += encoder.prependVarNumber(tlv::StartBlockId);
   }
 
   if (m_hasStatusCode) {
@@ -187,7 +198,80 @@ RepoCommandResponse::wireEncode(EncodingImpl<T>& encoder) const
   std::cout<<"Encoded data: "<<totalLength<<std::endl;
   return totalLength;
 }
+///////////////////////////////////////////////////////////////////
+/// setStatus
+std::string
+RepoCommandResponse::getInsertionStatus(){
+    if(m_hasStatusCode){
+        std::string status;
+        switch(getCode()){
+            case 100:{
+                status = "The command is OK. can start to fetch the data";
+                break;}
+            case 200:{
+                status = "All the data has been inserted";
+                break;}
+            case 300:{
+                 status = "This insertion is in progress";
+                 break;}
+            case 401:{
+                 status = "Malformed Command";
+                 break;}
+            case 403:{
+                 status = "This insertion is in progress";
+                 break;}
+            case 404:{
+                 status = "No such this insertion is in progress";
+                 break;}
+            case 405:{
+                 status = "EndBlockId Missing Timeout";
+                 break;}
+            default:{
+                 status = "Unknown Message";
+                 break;}
+            }
+        return status;
+    }
+    return "StatusCode Missing";
+}
+//////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+/// setStatus
+std::string
+RepoCommandResponse::getDeletionStatus(){
+    if(m_hasStatusCode){
+        std::string status;
+        switch(getCode()){
+            case 200:{
+                status = "All the data has been deleted";
+                break;}
+            case 300:{
+                 status = "This deletion is in progress";
+                 break;}
+            case 401:{
+                 status = "This deletion or deletion check is invalidated";
+                 break;}
+            case 402:{
+                 status = "Selectors and BlockId both present";
+                 break;}
+            case 403:{
+                 status = "Malformed Command";
+                 break;}
+            case 404:{
+                 status = "No such this deletion is in progress";
+                 break;}
 
+            default:{
+                 status = "Unknown Message";
+                 break;}
+            }
+        return status;
+    }
+    return "StatusCode Missing";
+}
+//////////////////////////////////////////////////////////////////
+/// \brief RepoCommandResponse::wireDecode
+/// \param wire
 void
 RepoCommandResponse::wireDecode(const Block& wire)
 {
@@ -198,18 +282,78 @@ RepoCommandResponse::wireDecode(const Block& wire)
   m_hasInsertNum = false;
   m_hasDeleteNum = false;
   m_wire = wire;
-  //m_wire.parse();
-   m_wire.parse();
-if(m_wire.type()==ndn::tlv::nfd::ControlResponse){
-  std::cout<<"This is a Control Response"<<m_wire<<std::endl;
-  m_wire = m_wire.get(tlv::RepoCommandResponse);
   m_wire.parse();
-} 
+///////////////////////////////////////////////////////////////
+//////If the response is a Command wrapped in a Control Response
+if(m_wire.type()==ndn::tlv::nfd::ControlResponse){
+    ///////////////////////////////////////////////////////
+    std::cout<<"This is a Control Response"<<m_wire<<std::endl;
+    auto val = m_wire.elements_begin();
+    if (val != m_wire.elements_end() && val->type() == ndn::tlv::nfd::StatusCode) {
+        setCode(readNonNegativeInteger(*val));
+        ++val;
+    }
+    if (val != m_wire.elements_end() && val->type() == tlv::nfd::StatusText) {
+      setText(readString(*val));
+      ++val;
+    }
+    if (val->type() == tlv::RepoCommandResponse){
+        m_wire = *val;
+        m_wire.parse();
 
- std::cout<<"Phased: "<<m_wire<<std::endl;
-  Block::element_const_iterator val;
+        Block::element_const_iterator val;
+        if (m_wire.type() != tlv::RepoCommandResponse)
+          BOOST_THROW_EXCEPTION(Error("RepoCommandResponse malformed, type is "+m_wire.type()));
+        // StartBlockId
+        val = m_wire.find(tlv::StartBlockId);
+        if (val != m_wire.elements_end()) {
+          m_hasStartBlockId = true;
+          m_startBlockId = readNonNegativeInteger(*val);
+        }
+        // EndBlockId
+        val = m_wire.find(tlv::EndBlockId);
+        if (val != m_wire.elements_end()) {
+          m_hasEndBlockId = true;
+          m_endBlockId = readNonNegativeInteger(*val);
+        }
+
+        // ProcessId
+        val = m_wire.find(tlv::ProcessId);
+        if (val != m_wire.elements_end()) {
+          m_hasProcessId = true;
+          m_processId = readNonNegativeInteger(*val);
+        }
+
+        //StatusCode
+        val = m_wire.find(tlv::StatusCode);
+        if (val != m_wire.elements_end()) {
+          setCode(readNonNegativeInteger(*val));
+        }
+        else {
+          BOOST_THROW_EXCEPTION(Error("required field StatusCode is missing"));
+        }
+
+        // InsertNum
+        val = m_wire.find(tlv::InsertNum);
+        if (val != m_wire.elements_end()) {
+          m_hasInsertNum = true;
+          m_insertNum = readNonNegativeInteger(*val);
+        }
+
+        // DeleteNum
+        val = m_wire.find(tlv::DeleteNum);
+        if (val != m_wire.elements_end()) {
+          m_hasDeleteNum = true;
+          m_deleteNum = readNonNegativeInteger(*val);
+        }
+    }
+}else{
+///////////////////////////////////////////////////////////
+/// Directly Decode from a Repo Command Response
+
   if (m_wire.type() != tlv::RepoCommandResponse)
     BOOST_THROW_EXCEPTION(Error("RepoCommandResponse malformed, type is "+m_wire.type()));
+  Block::element_const_iterator val;
   // StartBlockId
   val = m_wire.find(tlv::StartBlockId);
   if (val != m_wire.elements_end()) {
@@ -253,6 +397,7 @@ if(m_wire.type()==ndn::tlv::nfd::ControlResponse){
     m_hasDeleteNum = true;
     m_deleteNum = readNonNegativeInteger(*val);
   }
+}
 }
 
 NDN_CXX_DEFINE_WIRE_ENCODE_INSTANTIATIONS(RepoCommandResponse);

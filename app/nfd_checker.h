@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unistd.h>
 
+#include "messager.h"
 #include <boost/lexical_cast.hpp>
 
 using ndn::Name;
@@ -19,8 +20,8 @@ class nfd_checker
 {
 public:
     nfd_checker();
-    void
-    run();
+    bool
+    check();
 private:
 
     void

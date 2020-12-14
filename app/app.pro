@@ -8,6 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+
 TARGET = app
 TEMPLATE = app
 
@@ -24,19 +25,48 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        ndn_app.cpp \
+    chatbuf.pb.cc \
+    consumer.cpp \
+    consumer_manager.cpp \
+    main.cpp \
+    message_parser.cpp \
+    messager.cpp \
+    ndn_app.cpp \
     nfd_checker.cpp \
-    dialog.cpp
+    nfd_report.cpp \
+    nfd_status_http.cpp\
+    repo-ng/repo-command-parameter.cpp \
+    repo-ng/repo-command-response.cpp \
+    repo_putfile.cpp \
+    repo_deletefile.cpp \
+    ndnputfile.cpp \
+
 
 HEADERS += \
+    repo-ng/repo-command-parameter.hpp \
+    repo-ng/repo-command-response.hpp \
+    repo-ng/repo-tlv.hpp \
+    chatbuf.pb.h \
+    common.h \
+    consumer_manager.h \
+    message_parser.h \
+    messager.h \
     ndn_app.h \
     nfd_checker.h \
-    dialog.h
+    nfd_report.h \
+    nfd_status_http.h \
+    repo_putfile.h \
+    repo_deletefile.h\
+    repo-ng/repo-command-parameter.hpp \
+    repo-ng/repo-command-response.hpp \
+    repo-ng/repo-tlv.hpp
+
+
 
 FORMS += \
         ndn_app.ui \
-    dialog.ui
+    consumer_manager.ui \
+    messager.ui
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += libndn-cxx
@@ -45,4 +75,9 @@ unix: PKGCONFIG += libndn-cxx
 SUBDIRS += \
     app.pro \
 
-unix: PKGCONFIG += libndn-cpp
+
+
+INCLUDEPATH += $$PWD/../../../../usr/local/include
+DEPENDPATH += $$PWD/../../../../usr/local/include
+
+unix|win32: LIBS += -lprotobuf

@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = app
 TEMPLATE = app
-
+CONFIG += c++14
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -27,23 +27,24 @@ SOURCES += \
         main.cpp \
         ndn_app.cpp \
     chatbuf.pb.cc \
-    test-chrono-chat.cpp \
-    chatbuf.pb.cc \
-    main.cpp \
-    ndn_app.cpp \
-    test-chrono-chat.cpp
+    chat_demo.cpp \
+    chat_setter.cpp \
+    chat_core.cpp \
+    data_sender.cpp
 
 HEADERS += \
     ndn_app.h \
     chatbuf.pb.h \
-    chatbuf.pb.h \
-    ndn_app.h \
-    ui_dialog.h \
-    ui_ndn_app.h
+    common.h \
+    chat_demo.h \
+    chat_setter.h \
+    chat_core.h \
+    data_sender.h
 
 FORMS += \
         ndn_app.ui \
-    ndn_app.ui
+    chat_demo.ui \
+    chat_setter.ui
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += libndn-cpp
@@ -51,23 +52,31 @@ unix: PKGCONFIG += libndn-cpp
 
 SUBDIRS += \
     app.pro \
-    app_ndn-cpp.pro
 
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../usr/local/lib/release/ -lndn-cpp
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../usr/local/lib/debug/ -lndn-cpp
-else:unix: LIBS += -L$$PWD/../../../../usr/local/lib/ -lndn-cpp
+unix: LIBS += -L$$PWD/../../../../usr/local/lib/ -lndn-cpp
 
 INCLUDEPATH += $$PWD/../../../../usr/local/include
 DEPENDPATH += $$PWD/../../../../usr/local/include
 
-unix|win32: LIBS += -lprotobuf
+
+unix{
+LIBS += -lprotobuf
+LIBS += -L/usr/lib/x86_64-linux-gnu
+LIBS += -lboost_system
+LIBS += -L/usr/lib
+LIBS += -llog4cxx
+LIBS += -lpthread
+LIBS += -lz
+}
+
+
 
 DISTFILES += \
-    chat.o \
-    chatbuf.pb.o \
-    main.o \
-    nfd_report.o \
-    app.pro.user \
-    app_ndn-cpp.pro.user \
-    chatbuf.proto
+    chatbuf.proto \
+    qrc_doge_theme.o
+
+unix:!macx: LIBS += -lndn-cpp
+
+RESOURCES += \
+    doge_theme.qrc

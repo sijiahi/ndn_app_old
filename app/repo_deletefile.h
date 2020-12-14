@@ -1,5 +1,5 @@
-#ifndef REPO_PUTFILE_H
-#define REPO_PUTFILE_H
+#ifndef repo_deletefile_H
+#define repo_deletefile_H
 
 
 
@@ -24,15 +24,20 @@
  */
 #include "repo-ng/repo-command-parameter.hpp"
 #include "repo-ng/repo-command-response.hpp"
+#include "messager.h"
 
 #include <QObject>
 #include <QInputDialog>
 #include <QFileDialog>
+#include <QDialog>
+#include <QMessageBox>
 #include <ndn-cxx/face.hpp>
+
 #include <ndn-cxx/security/command-interest-signer.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-helpers.hpp>
 #include <ndn-cxx/util/scheduler.hpp>
+#include <ndn-cxx/util/random.hpp>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -46,7 +51,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <boost/iostreams/read.hpp>
-
+#include "common.h"
 namespace repo {
 
 using namespace ndn::time;
@@ -55,14 +60,10 @@ using std::shared_ptr;
 using std::make_shared;
 using std::bind;
 
-static const uint64_t DEFAULT_BLOCK_SIZE = 1000;
-static const uint64_t DEFAULT_INTEREST_LIFETIME = 4000;
-static const uint64_t DEFAULT_FRESHNESS_PERIOD = 10000;
-static const uint64_t DEFAULT_CHECK_PERIOD = 1000;
-static const size_t PRE_SIGN_DATA_COUNT = 11;
-static int putfile();
 
-class repo_putfile : public QObject
+static int deletefile();
+
+class repo_deletefile : public QObject
 {
         Q_OBJECT
 public:
@@ -72,7 +73,7 @@ public:
     using std::runtime_error::runtime_error;
   };
 
- explicit repo_putfile(QObject *parent = nullptr)
+ explicit repo_deletefile(QObject *parent = nullptr)
     : isUnversioned(true)
     , isSingle(false)
     , useDigestSha256(false)
@@ -89,7 +90,11 @@ public:
     , m_currentSegmentNo(0)
     , m_isFinished(false)
     , m_cmdSigner(m_keyChain)
+    , process(nullptr)
   {
+      process.setWindowTitle("Post to DataBase");
+      process.addMessage("Start Posting Text to Database");
+      process.show();
   }
 
   void
@@ -98,7 +103,6 @@ public:
   void
   setInsertStream(std::istream* inputFileStream);
   ///////////////////////////
-
 
 private:
   //////////////////////
@@ -109,20 +113,20 @@ private:
   prepareNextData(uint64_t referenceSegmentNo);
 
   void
-  startInsertCommand();
+  startDeleteCommand();
 
   void
-  onInsertCommandResponse(const ndn::Interest& interest, const ndn::Data& data);
+  onDeleteCommandResponse(const ndn::Interest& interest, const ndn::Data& data);
   /////////////////////////////////////
   //void
   //setSingle(const )
   /// /////////////////////////////////
   //////////////////////
   void
-  onInsertCommandNack(const ndn::Interest& interest);
+  onDeleteCommandNack(const ndn::Interest& interest, const ndn::lp::Nack& nack);
 ///////////////////////////////
   void
-  onInsertCommandTimeout(const ndn::Interest& interest);
+  onDeleteCommandTimeout(const ndn::Interest& interest);
   void
   onInterestSelect(const ndn::Name& prefix, const ndn::Interest& interest);
   void
@@ -171,9 +175,9 @@ public:
   milliseconds timeout;
   ndn::Name repoPrefix;
   ndn::Name ndnName;
-
+  std::istream* insertStream;
   bool isVerbose;
-
+  Messager process;
 private:
   ndn::Face m_face;
   ndn::Scheduler m_scheduler;
@@ -184,53 +188,63 @@ private:
   size_t m_currentSegmentNo;
   bool m_isFinished;
   ndn::Name m_dataPrefix;
-  std::istream* insertStream;
-
   using DataContainer = std::map<uint64_t, shared_ptr<ndn::Data>>;
   DataContainer m_data;
   ndn::security::CommandInterestSigner m_cmdSigner;
+
 signals:
 
 public slots:
     };
 ////////////////////////////////////
+/// \brief putfile
+/// This is to post file and build an independent Interface
+/// \return Execution Success or not
+/////
 static int
-putfile(){
-repo_putfile repo_putfile;
-repo_putfile.isUnversioned = true;
-repo_putfile.isSingle = true;
-repo_putfile.isVerbose = true;
+deletefile(){
+repo_deletefile repo_deletefile;
+repo_deletefile.isUnversioned = true;
+repo_deletefile.isSingle = true;
+repo_deletefile.isVerbose = true;
 bool nameset = false;
 std::string repoPrefix;
 std::string ndnName;
 while(!nameset){
-repoPrefix = QInputDialog::getText(NULL, "Input Dialog",
-                                                   "Please repoPrefix",
+repoPrefix = QInputDialog::getText(NULL, "repo-ng: repoPrefix",
+                                                   "Please Enter repoPrefix",
                                                    QLineEdit::Normal,
                                                    "/example/repo/1",
                                                    &nameset).toStdString();
 }
 
 nameset = false;
+repo_deletefile.repoPrefix = Name(repoPrefix);
+repo_deletefile.process.addMessage(QString::fromStdString("\nSetting DataBase Prefix: "+repoPrefix));
 while(!nameset){
-ndnName = QInputDialog::getText(NULL, "Input Dialog",
+ndnName = QInputDialog::getText(NULL, "repo-ng: Data Prefix",
                                                    "Please Enter ndnName",
                                                    QLineEdit::Normal,
                                                    "/sijiahi",
                                                    &nameset).toStdString();}
+repo_deletefile.ndnName = Name(ndnName);
+repo_deletefile.process.addMessage(QString::fromStdString("\nSetting Data Prefix: "+ndnName));
+//bool inputFileStreamReady = false;
+//std::string file_name = QFileDialog::getOpenFileName(NULL,"Select file to post on DataBase",".","*.*").toStdString();
+//std::ifstream inputFileStream(file_name, std::ios::in | std::ios::binary);
+/*while (!inputFileStreamReady) {
 
-repo_putfile.repoPrefix = Name(repoPrefix);
-repo_putfile.ndnName = Name(ndnName);
-std::string file_name = QFileDialog::getOpenFileName(NULL,"标题",".","*.*").toStdString();
-std::ifstream inputFileStream(file_name, std::ios::in | std::ios::binary);
-if (!inputFileStream.is_open()) {
-  std::cerr << "ERROR: cannot open " << file_name << std::endl;
-  return 2;}
-std::cout<<"Reading file"<<file_name<<std::endl;
-repo_putfile.setInsertStream(&inputFileStream);
-repo_putfile.run();
+    if(inputFileStream.is_open())
+    {
+        repo_deletefile.process.addMessage(QString::fromStdString("\nReading file: "+file_name));
+        inputFileStreamReady = true;}
+    else
+        repo_deletefile.process.addMessage(QString::fromStdString("\nERROR: cannot open " + file_name));
+}*/
+    //repo_deletefile.insertStream = &inputFileStream;
+    repo_deletefile.run();
 }
 /////////////////////////////
 } //repo
 
-#endif // REPO_PUTFILE_H
+#endif // repo_deletefile_H

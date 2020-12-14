@@ -1,15 +1,19 @@
 #include "nfd_checker.h"
 #include <QMessageBox>
 #include <QTextStream>
-
+#include <message_parser.h>
+#include <QDebug>
+#include <QProcess>
 nfd_checker::nfd_checker()
 {
 }
-void
-nfd_checker::run(){
+bool
+nfd_checker::check(){
     try{
         Name interestName("/localhost/nfd/status/general");
         Interest  interest(interestName);
+        interest.setCanBePrefix(true);
+        //interest.setCanBePrefix(false);
         std::cout << "Sending Interest " << interest << std::endl;
         m_face.expressInterest(interest,
                                bind(&nfd_checker::onData, this,  _1, _2),
@@ -20,32 +24,38 @@ nfd_checker::run(){
     catch (const std::exception& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         QMessageBox msgBox;
-        msgBox.setText(e.what() );
+        QString msg = e.what();
+        msgBox.setText(msg);
         msgBox.exec();
       }
 }
-
 void
 nfd_checker::onData(const Interest& interest, const Data& data){
-        QTextStream text;
+    //qout<<data<<endl;
        std::cout << "Received Data " << data << std::endl;
-       QMessageBox msgBox;
-       msgBox.setText();
-       msgBox.exec();
+       std::stringstream text;
+       text<< "Received Data " << data.getContent();
+       message_parser parser;
+       parser.wireDecode(data.getContent());
+       Messager messager;
+       messager.setMessage(QString::fromStdString(text.str()));
+       messager.exec();
 }
 void
 nfd_checker::onNack(const Interest& interest, const Nack& nack){
     std::cout << "Received Nack with reason " << nack.getReason() << std::endl;
+    //QMessageBox msgBox;
+    QProcess::execute("nfd-start");
     QMessageBox msgBox;
-    //msgBox.setText(nack.getReason() );
+    msgBox.setText("Nacked");
     msgBox.exec();
+    //msgBox.setText(nack.getReason() );
+    //msgBox.exec();
 }
 void
 nfd_checker::onTimeout(const Interest& interest){
       std::cout << "Timeout for " << interest << std::endl;
       QMessageBox msgBox;
-      //msgBox.setText(interest);
+      msgBox.setText("Timeout for interest");
       msgBox.exec();
-
 }
-

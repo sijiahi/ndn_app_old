@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_DEPRECATED_WARNINGS -DBOOST_STACKTRACE_DYN_LINK -DBOOST_LOG_DYN_LINK -DQT_QML_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -pthread -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -pthread -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../app -I. -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -I. -isystem /usr/include/libdrm -I. -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
+INCPATH       = -I../app -I. -isystem /usr/local/include -isystem /usr/local/include -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -I. -isystem /usr/include/libdrm -I. -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
 QMAKE         = /usr/lib/qt5/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -38,7 +38,7 @@ DISTNAME      = app1.0.0
 DISTDIR = /home/sijia/Qt_space/build-app-Desktop-Debug/.tmp/app1.0.0
 LINK          = g++
 LFLAGS        = 
-LIBS          = $(SUBLIBS) -L/usr/local/lib -pthread -lndn-cxx -lboost_system -lboost_program_options -lboost_chrono -lboost_date_time -lboost_filesystem -lboost_thread -lboost_log -lboost_stacktrace_backtrace -lcrypto -lsqlite3 -latomic -lrt -lndn-cpp -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -lprotobuf -L/usr/local/lib -pthread -lndn-cxx -lboost_system -lboost_program_options -lboost_chrono -lboost_date_time -lboost_filesystem -lboost_thread -lboost_log -lboost_stacktrace_backtrace -lboost_unit_test_framework -lcrypto -lsqlite3 -latomic -lrt -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -50,17 +50,43 @@ OBJECTS_DIR   = ./
 
 ####### Files
 
-SOURCES       = ../app/main.cpp \
+SOURCES       = ../app/chatbuf.pb.cc \
+		../app/consumer_manager.cpp \
+		../app/main.cpp \
+		../app/message_parser.cpp \
+		../app/messager.cpp \
 		../app/ndn_app.cpp \
 		../app/nfd_checker.cpp \
-		../app/dialog.cpp moc_ndn_app.cpp \
-		moc_dialog.cpp
-OBJECTS       = main.o \
+		../app/nfd_report.cpp \
+		../app/nfd_status_http.cpp \
+		../app/repo-ng/repo-command-parameter.cpp \
+		../app/repo-ng/repo-command-response.cpp \
+		../app/repo_deletefile.cpp \
+		../app/ndnputfile.cpp moc_consumer_manager.cpp \
+		moc_messager.cpp \
+		moc_ndn_app.cpp \
+		moc_nfd_report.cpp \
+		moc_repo_putfile.cpp \
+		moc_repo_deletefile.cpp
+OBJECTS       = chatbuf.pb.o \
+		consumer_manager.o \
+		main.o \
+		message_parser.o \
+		messager.o \
 		ndn_app.o \
 		nfd_checker.o \
-		dialog.o \
+		nfd_report.o \
+		nfd_status_http.o \
+		repo-command-parameter.o \
+		repo-command-response.o \
+		repo_deletefile.o \
+		ndnputfile.o \
+		moc_consumer_manager.o \
+		moc_messager.o \
 		moc_ndn_app.o \
-		moc_dialog.o
+		moc_nfd_report.o \
+		moc_repo_putfile.o \
+		moc_repo_deletefile.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/linux.conf \
@@ -78,6 +104,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_designer.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_devicediscovery_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_egl_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_kms_support_private.pri \
@@ -88,6 +115,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_glx_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_help.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_input_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_kms_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_linuxaccessibility_support_private.pri \
@@ -103,9 +131,12 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_theme_support_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uiplugin.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uitools.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
@@ -115,7 +146,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		../app/.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -136,12 +166,35 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exceptions.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
-		../app/app.pro ../app/ndn_app.h \
+		../app/app.pro ../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/chatbuf.pb.h \
+		../app/common.h \
+		../app/consumer_manager.h \
+		../app/message_parser.h \
+		../app/messager.h \
+		../app/ndn_app.h \
 		../app/nfd_checker.h \
-		../app/dialog.h ../app/main.cpp \
+		../app/nfd_report.h \
+		../app/nfd_status_http.h \
+		../app/repo_putfile.h \
+		../app/repo_deletefile.h \
+		../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/repo-ng/repo-tlv.hpp ../app/chatbuf.pb.cc \
+		../app/consumer_manager.cpp \
+		../app/main.cpp \
+		../app/message_parser.cpp \
+		../app/messager.cpp \
 		../app/ndn_app.cpp \
 		../app/nfd_checker.cpp \
-		../app/dialog.cpp
+		../app/nfd_report.cpp \
+		../app/nfd_status_http.cpp \
+		../app/repo-ng/repo-command-parameter.cpp \
+		../app/repo-ng/repo-command-response.cpp \
+		../app/repo_deletefile.cpp \
+		../app/ndnputfile.cpp
 QMAKE_TARGET  = app
 DESTDIR       = 
 TARGET        = app
@@ -150,7 +203,7 @@ TARGET        = app
 first: all
 ####### Build rules
 
-$(TARGET): ui_ndn_app.h ui_dialog.h $(OBJECTS)  
+$(TARGET): ui_ndn_app.h ui_consumer_manager.h ui_messager.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -170,6 +223,7 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_designer.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_devicediscovery_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_egl_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_kms_support_private.pri \
@@ -180,6 +234,7 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_glx_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_help.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_input_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_kms_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_linuxaccessibility_support_private.pri \
@@ -195,9 +250,12 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_theme_support_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uiplugin.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uitools.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri \
@@ -207,7 +265,6 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
@@ -250,6 +307,7 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_core_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_dbus_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_designer.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_devicediscovery_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_egl_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_eglfs_kms_support_private.pri:
@@ -260,6 +318,7 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_glx_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_gui_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_help.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_input_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_kms_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_linuxaccessibility_support_private.pri:
@@ -275,9 +334,12 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_svg.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_testlib_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_theme_support_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uiplugin.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_uitools.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_widgets_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_xcb_qpa_lib_private.pri:
@@ -287,7 +349,6 @@ Makefile: ../app/app.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qt_config.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_post.prf:
-.qmake.stash:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exclusive_builds.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/toolchain.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf:
@@ -327,9 +388,9 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/ndn_app.h ../app/nfd_checker.h ../app/dialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/main.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp ../app/dialog.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../app/ndn_app.ui ../app/dialog.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/repo-ng/repo-command-parameter.hpp ../app/repo-ng/repo-command-response.hpp ../app/repo-ng/repo-tlv.hpp ../app/chatbuf.pb.h ../app/common.h ../app/consumer_manager.h ../app/message_parser.h ../app/messager.h ../app/ndn_app.h ../app/nfd_checker.h ../app/nfd_report.h ../app/nfd_status_http.h ../app/repo_putfile.h ../app/repo_deletefile.h ../app/repo-ng/repo-command-parameter.hpp ../app/repo-ng/repo-command-response.hpp ../app/repo-ng/repo-tlv.hpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/chatbuf.pb.cc ../app/consumer_manager.cpp ../app/main.cpp ../app/message_parser.cpp ../app/messager.cpp ../app/ndn_app.cpp ../app/nfd_checker.cpp ../app/nfd_report.cpp ../app/nfd_status_http.cpp ../app/repo-ng/repo-command-parameter.cpp ../app/repo-ng/repo-command-response.cpp ../app/repo_deletefile.cpp ../app/ndnputfile.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../app/ndn_app.ui ../app/consumer_manager.ui ../app/messager.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -361,31 +422,74 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -g -pthread -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_ndn_app.cpp moc_dialog.cpp
+compiler_moc_header_make_all: moc_consumer_manager.cpp moc_messager.cpp moc_ndn_app.cpp moc_nfd_report.cpp moc_repo_putfile.cpp moc_repo_deletefile.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_ndn_app.cpp moc_dialog.cpp
-moc_ndn_app.cpp: ../app/ndn_app.h \
+	-$(DEL_FILE) moc_consumer_manager.cpp moc_messager.cpp moc_ndn_app.cpp moc_nfd_report.cpp moc_repo_putfile.cpp moc_repo_deletefile.cpp
+moc_consumer_manager.cpp: ../app/messager.h \
+		../app/consumer_manager.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/consumer_manager.h -o moc_consumer_manager.cpp
 
-moc_dialog.cpp: ../app/dialog.h \
+moc_messager.cpp: ../app/messager.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/dialog.h -o moc_dialog.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/messager.h -o moc_messager.cpp
+
+moc_ndn_app.cpp: ../app/consumer_manager.h \
+		../app/messager.h \
+		../app/repo_putfile.h \
+		../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/common.h \
+		../app/repo_deletefile.h \
+		../app/ndn_app.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/ndn_app.h -o moc_ndn_app.cpp
+
+moc_nfd_report.cpp: ../app/nfd_report.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/nfd_report.h -o moc_nfd_report.cpp
+
+moc_repo_putfile.cpp: ../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/messager.h \
+		../app/common.h \
+		../app/repo_putfile.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/repo_putfile.h -o moc_repo_putfile.cpp
+
+moc_repo_deletefile.cpp: ../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/messager.h \
+		../app/common.h \
+		../app/repo_deletefile.h \
+		moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/sijia/Qt_space/app -I/usr/local/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../app/repo_deletefile.h -o moc_repo_deletefile.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_ndn_app.h ui_dialog.h
+compiler_uic_make_all: ui_ndn_app.h ui_consumer_manager.h ui_messager.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_ndn_app.h ui_dialog.h
+	-$(DEL_FILE) ui_ndn_app.h ui_consumer_manager.h ui_messager.h
 ui_ndn_app.h: ../app/ndn_app.ui \
 		/usr/lib/qt5/bin/uic
 	/usr/lib/qt5/bin/uic ../app/ndn_app.ui -o ui_ndn_app.h
 
-ui_dialog.h: ../app/dialog.ui \
+ui_consumer_manager.h: ../app/consumer_manager.ui \
 		/usr/lib/qt5/bin/uic
-	/usr/lib/qt5/bin/uic ../app/dialog.ui -o ui_dialog.h
+	/usr/lib/qt5/bin/uic ../app/consumer_manager.ui -o ui_consumer_manager.h
+
+ui_messager.h: ../app/messager.ui \
+		/usr/lib/qt5/bin/uic
+	/usr/lib/qt5/bin/uic ../app/messager.ui -o ui_messager.h
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -397,27 +501,97 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean compiler_ui
 
 ####### Compile
 
-main.o: ../app/main.cpp ../app/ndn_app.h
+chatbuf.pb.o: ../app/chatbuf.pb.cc ../app/chatbuf.pb.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o chatbuf.pb.o ../app/chatbuf.pb.cc
+
+consumer_manager.o: ../app/consumer_manager.cpp ../app/consumer_manager.h \
+		../app/messager.h \
+		ui_consumer_manager.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o consumer_manager.o ../app/consumer_manager.cpp
+
+main.o: ../app/main.cpp ../app/ndn_app.h \
+		../app/consumer_manager.h \
+		../app/messager.h \
+		../app/repo_putfile.h \
+		../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/common.h \
+		../app/repo_deletefile.h \
+		../app/consumer.cpp \
+		../app/repo_putfile.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../app/main.cpp
 
+message_parser.o: ../app/message_parser.cpp ../app/message_parser.h \
+		../app/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o message_parser.o ../app/message_parser.cpp
+
+messager.o: ../app/messager.cpp ../app/messager.h \
+		ui_messager.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o messager.o ../app/messager.cpp
+
 ndn_app.o: ../app/ndn_app.cpp ../app/ndn_app.h \
+		../app/consumer_manager.h \
+		../app/messager.h \
+		../app/repo_putfile.h \
+		../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/common.h \
+		../app/repo_deletefile.h \
 		ui_ndn_app.h \
-		../app/nfd_checker.h \
-		../app/dialog.h
+		../app/nfd_checker.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndn_app.o ../app/ndn_app.cpp
 
-nfd_checker.o: ../app/nfd_checker.cpp ../app/nfd_checker.h
+nfd_checker.o: ../app/nfd_checker.cpp ../app/nfd_checker.h \
+		../app/message_parser.h \
+		../app/common.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_checker.o ../app/nfd_checker.cpp
 
-dialog.o: ../app/dialog.cpp ../app/dialog.h \
-		ui_dialog.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dialog.o ../app/dialog.cpp
+nfd_report.o: ../app/nfd_report.cpp ../app/nfd_report.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_report.o ../app/nfd_report.cpp
+
+nfd_status_http.o: ../app/nfd_status_http.cpp ../app/nfd_status_http.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nfd_status_http.o ../app/nfd_status_http.cpp
+
+repo-command-parameter.o: ../app/repo-ng/repo-command-parameter.cpp ../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o repo-command-parameter.o ../app/repo-ng/repo-command-parameter.cpp
+
+repo-command-response.o: ../app/repo-ng/repo-command-response.cpp ../app/repo-ng/repo-command-response.hpp \
+		../app/repo-ng/repo-tlv.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o repo-command-response.o ../app/repo-ng/repo-command-response.cpp
+
+repo_deletefile.o: ../app/repo_deletefile.cpp ../app/repo_deletefile.h \
+		../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp \
+		../app/messager.h \
+		../app/common.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o repo_deletefile.o ../app/repo_deletefile.cpp
+
+ndnputfile.o: ../app/ndnputfile.cpp ../app/repo-ng/repo-command-parameter.hpp \
+		../app/repo-ng/repo-tlv.hpp \
+		../app/repo-ng/repo-command-response.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ndnputfile.o ../app/ndnputfile.cpp
+
+moc_consumer_manager.o: moc_consumer_manager.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_consumer_manager.o moc_consumer_manager.cpp
+
+moc_messager.o: moc_messager.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_messager.o moc_messager.cpp
 
 moc_ndn_app.o: moc_ndn_app.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ndn_app.o moc_ndn_app.cpp
 
-moc_dialog.o: moc_dialog.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dialog.o moc_dialog.cpp
+moc_nfd_report.o: moc_nfd_report.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_nfd_report.o moc_nfd_report.cpp
+
+moc_repo_putfile.o: moc_repo_putfile.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_repo_putfile.o moc_repo_putfile.cpp
+
+moc_repo_deletefile.o: moc_repo_deletefile.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_repo_deletefile.o moc_repo_deletefile.cpp
 
 ####### Install
 

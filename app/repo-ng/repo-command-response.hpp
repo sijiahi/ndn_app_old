@@ -60,6 +60,7 @@ public:
     , m_hasInsertNum(false)
     , m_hasDeleteNum(false)
     , m_hasStatusCode(false)
+    , m_hasStatus(false)
   {
   }
 
@@ -72,6 +73,13 @@ public:
     std::cout<<"Reading from block"<<block<<std::endl;
     wireDecode(block);
   }
+
+  std::string
+  getInsertionStatus();
+
+
+  std::string
+  getDeletionStatus();
 
   uint64_t
   getStartBlockId() const
@@ -112,6 +120,9 @@ public:
 
   RepoCommandResponse&
   setCode(uint32_t statusCode);
+
+  RepoCommandResponse&
+  setText(std::string status);
 
   bool
   hasStatusCode() const;
@@ -163,6 +174,7 @@ private:
   bool m_hasInsertNum;
   bool m_hasDeleteNum;
   bool m_hasStatusCode;
+  bool m_hasStatus;
 
   mutable Block m_wire;
 };
